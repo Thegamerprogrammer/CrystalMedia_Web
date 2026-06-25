@@ -6,10 +6,15 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "server": "node server/server.js",
+    "start": "node server/server.js"
   },
   "dependencies": {
-    "vite": "latest"
+    "cors": "latest",
+    "express": "latest",
+    "vite": "latest",
+    "figlet": "latest"
   },
   "devDependencies": {}
 }

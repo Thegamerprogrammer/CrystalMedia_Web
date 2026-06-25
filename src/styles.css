@@ -1,16 +1,12 @@
-:root { color-scheme: dark; --bg:#050606; --sky:#a5d8ff; --muted:#6ca6d2; --chrome:#202124; }
+:root { color-scheme: dark; --sky:#a5d8ff; --chrome:#2b2b2b; }
 * { box-sizing: border-box; }
-html, body, #app { height:100%; margin:0; background:#0b0b0b; }
+html, body, #app { height:100%; margin:0; background:#050606; }
 body { font-family: Consolas, 'Cascadia Mono', 'Fira Code', 'Courier New', monospace; overflow:hidden; }
-.termux-shell { height:100%; display:grid; grid-template-columns:minmax(0,1fr) 320px; background:linear-gradient(#2b2b2b 0 39px,#080909 39px); }
-.termux-shell::before { content:'▣  Command Prompt - crystalmedia-web   ×      +   ˅'; position:fixed; top:0; left:0; right:0; height:39px; color:#f3f3f3; background:#2b2b2b; font:600 14px system-ui,sans-serif; display:flex; align-items:center; padding-left:20px; letter-spacing:.1px; z-index:3; }
-.terminal { position:relative; margin-top:39px; min-width:0; height:calc(100vh - 39px); background:#050606; color:var(--sky); overflow:auto; outline:none; padding:68px 32px 32px; text-shadow:0 0 8px rgba(165,216,255,.25); }
+.termux-shell { height:100%; background:linear-gradient(var(--chrome) 0 39px,#050606 39px); }
+.termux-shell::before { content:'▣  Command Prompt - crystalmedia-web   ×      +   ˅'; position:fixed; top:0; left:0; right:0; height:39px; color:#f3f3f3; background:var(--chrome); font:600 14px system-ui,sans-serif; display:flex; align-items:center; padding-left:20px; z-index:3; }
+.terminal { position:relative; margin-top:39px; width:100vw; height:calc(100vh - 39px); background:#050606; color:var(--sky); overflow:auto; outline:none; padding:68px 32px 32px; text-shadow:0 0 8px rgba(165,216,255,.25); }
 #screen { margin:0; min-height:100%; font:700 clamp(13px, 1.06vw, 20px)/1.14 Consolas, 'Cascadia Mono', 'Courier New', monospace; white-space:pre; color:var(--sky); }
 .cursor { display:inline-block; width:.62em; height:1.15em; background:var(--sky); box-shadow:0 0 12px var(--sky); animation:blink 1s steps(1) infinite; position:absolute; bottom:32px; left:32px; opacity:.75; }
 @keyframes blink { 50% { opacity:0; } }
 #hiddenInput { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
-.docs-panel { margin-top:39px; border-left:1px solid rgba(165,216,255,.2); padding:22px; color:#d6e4ff; background:rgba(9,14,18,.92); font:14px/1.5 system-ui,sans-serif; overflow:auto; }
-.docs-panel h2 { color:var(--sky); margin-top:0; font-family:Consolas,monospace; }
-.docs-panel button { width:100%; margin:6px 0; padding:10px; border:1px solid rgba(165,216,255,.4); background:#071019; color:var(--sky); border-radius:6px; font-family:Consolas,monospace; cursor:pointer; }
-.docs-panel button:hover { background:#102033; }
-@media (max-width: 900px) { .termux-shell { grid-template-columns:1fr; } .docs-panel { display:none; } .terminal { padding:32px 14px; } }
+@media (max-width: 900px) { .terminal { padding:32px 14px; } }

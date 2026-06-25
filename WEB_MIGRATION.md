@@ -4,103 +4,96 @@
 
 ```text
 CrystalMedia_Web/
-├── index.html                  # Browser entry point for GitHub/Cloudflare/Vercel static hosting
-├── package.json                # Vite scripts for local dev/build/preview
+├── index.html                  # Browser entry point
+├── package.json                # Vite frontend + Node backend scripts
 ├── package-lock.json           # Locked JavaScript dependency graph
+├── server/
+│   └── server.js               # Native yt-dlp/ffmpeg backend with SSE progress
 ├── src/
-│   ├── main.js                 # Terminal emulator, starfield, menus, command shell, compatibility flows
-│   └── styles.css              # Termux/Command Prompt-style dark terminal recreation
-├── CrystalMedia.py             # Original Python CLI retained for reference/native use
-├── crystalmedia/               # Original Python package modules retained
+│   ├── main.js                 # Terminal emulator, FIGlet splash, menus, URL input, live progress
+│   └── styles.css              # Full-width Termux/Command Prompt-style dark terminal
+├── CrystalMedia.py             # Original Python CLI retained for native reference
+├── crystalmedia/               # Original Python modules retained
 ├── vendor/exportify/           # Original Exportify vendor files retained
 └── WEB_MIGRATION.md            # Migration, compatibility, and deployment documentation
 ```
 
 ## Dependency migration table
 
-| Original dependency / feature | Browser replacement | Status | Notes |
+| Original dependency / feature | Browser/backend replacement | Status | Notes |
 |---|---|---:|---|
 | `rich`, `Live`, `Panel`, `Progress` | HTML `<pre>`, CSS terminal chrome, JavaScript progress renderer | Ported | Preserves fixed panels, log area, progress bar, prompt styling, and dark theme. |
-| `pyfiglet` | Embedded CrystalMedia ASCII art string | Ported | Avoids browser runtime font dependency while preserving CLI splash style. |
+| `pyfiglet` | `figlet` npm package using the Slant FIGlet font | Ported | The web app generates the CrystalMedia splash from a FIGlet implementation instead of a hard-coded-only logo. |
 | `StarfieldBackground` Python thread | `Starfield` JavaScript animation loop | Ported | Uses projection math, `.`/`*`/`+` depth tokens, resize tracking, and 30 FPS render loop. |
-| `msvcrt`, `tty`, `termios`, `select` keyboard handling | Browser `keydown` events | Ported with limits | Supports arrows, Enter, Ctrl+C, backspace, command history. Global hooks are intentionally unavailable. |
-| `yt-dlp` | Browser-safe simulated workflow plus optional backend recommendation | Limited | Browsers cannot run yt-dlp, ffmpeg, cookies-from-browser, or arbitrary process execution safely. |
-| `ffmpeg` | Optional `ffmpeg.wasm` or separate backend | Limited | Not bundled because large media transcoding is unreliable and expensive in static hosting. |
-| `spotdl` | Spotify oEmbed/Exportify CSV workflow concepts | Partial | Playlist metadata path is represented through integrated Exportify guidance and CSV-compatible flow. |
-| `mutagen` ID3 writing | Optional backend or client-side metadata libraries | Limited | Direct metadata mutation of remote downloads is constrained by File API/user file selection. |
-| `urllib`, `json`, `csv` | `fetch`, browser File API, custom command flow | Ported where possible | Network operations that require CORS-friendly endpoints can run in browser; protected media extraction needs backend. |
-| Filesystem output tree | Browser Downloads/user-selected files | Replaced | Static hosts cannot write arbitrary folders such as `CrystalMedia_output/`. |
-| Exportify helper | In-app `exportify` command and retained vendor files | Integrated | Users can export CSV from Exportify and use the browser app workflow. |
+| `msvcrt`, `tty`, `termios`, `select` keyboard handling | Browser `keydown` events | Ported with browser limits | Supports arrows, Enter, Ctrl+C, backspace, editable URL input, command history, and scrollback. |
+| `yt-dlp` | Included Node backend spawning native `yt-dlp` | Functional with backend | Mirrors online yt-dlp sites that use a server process behind a browser UI; progress streams back via Server-Sent Events. |
+| `ffmpeg` | Native `ffmpeg` installed beside `yt-dlp` on the backend | Functional with backend | Required for merge/remux/audio extraction just like the CLI. |
+| `spotdl` | Spotify metadata/search flow through `yt-dlp` and Exportify CSV helper endpoint | Partial | Spotify mode submits metadata/search terms to `yt-dlp` as `ytsearch1:<query>`. |
+| `mutagen` ID3 writing | `yt-dlp --embed-metadata --embed-thumbnail` | Partial | Covers common metadata/art embedding; advanced synced lyrics still needs a dedicated backend extension. |
+| `urllib`, `json`, `csv` | `fetch`, Express JSON APIs, `/api/exportify/parse` CSV parsing | Ported | Browser-to-backend APIs replace Python blocking I/O. |
+| Filesystem output tree | Backend `CrystalMedia_output/downloads` exposed as `/downloads` | Ported with backend | Static-only hosts cannot write arbitrary folders, so the backend owns the output tree. |
+| Exportify helper | Retained vendor files plus `/api/exportify/parse` and terminal `exportify` command | Integrated | Users can export CSV and feed parsed track queries into Spotify mode. |
 
 ## Feature compatibility report
 
-| Feature | Browser web app status | Compatibility details |
+| Feature | Web app status | Compatibility details |
 |---|---:|---|
 | Main menu, mode selection, quality/bitrate selection | Supported | Keyboard navigation mirrors the CLI: `↑`, `↓`, `Enter`, `Ctrl+C`. |
-| ASCII CrystalMedia splash | Supported | Rendered inside the browser terminal. |
+| Editable URL prompt | Supported | The Resource URL area accepts normal typing, backspace, and Enter. |
+| ASCII CrystalMedia splash | Supported | Rendered from the JS FIGlet package with the Slant font style. |
 | Animated starfield / particles | Supported | JavaScript implementation preserves the original terminal particle effect. |
-| Terminal prompt, scrollback, command history | Supported | `help`, `menu`, `youtube`, `music`, `spotify`, `exportify`, `compat`, `deps`, and `clear` commands are available. |
-| ANSI-like color/dark terminal style | Supported visually | CSS recreates the pastel blue-on-black terminal aesthetic; the current renderer is plain text plus themed panels. |
-| YouTube MP4/MP3 real downloads | Requires backend | `yt-dlp`, ffmpeg, browser cookies, signature solving, and filesystem writes are process-level tasks that static web pages cannot perform. |
-| Spotify playlist Exportify flow | Browser-compatible | The web app documents and integrates the Exportify-first workflow. A future enhancement can add drag-and-drop CSV ingestion. |
-| Spotify single track metadata | Requires CORS-friendly API/backend for reliability | Spotify oEmbed can be proxied; direct calls may be blocked by CORS or rate limits. |
-| Lyrics/subtitle/album art embedding | Requires backend for full parity | Browser can collect metadata but cannot safely rewrite downloaded MP3s without explicit user file access and extra libraries. |
-| Browser cookie extraction / age-restricted fallback | Unsupported in static browser | Browser security correctly prevents reading other browser profiles/cookies. |
-| Global keyboard/mouse hooks and process injection | Unsupported | Replaced with focused terminal keyboard controls. |
+| Terminal prompt, scrollback, command history | Supported | Commands include `help`, `menu`, `youtube`, `music`, `spotify`, `exportify`, `compat`, `deps`, `backend`, `open`, and `clear`. |
+| Real YouTube MP4/MP3 downloads | Functional with backend | Requires `npm run server` on a host with `yt-dlp` and `ffmpeg` installed. |
+| Real-time download progress | Supported with backend | The backend streams native `yt-dlp` stdout/stderr and percentage updates over SSE. |
+| Spotify playlist Exportify flow | Browser/backend-compatible | CSV parsing endpoint and terminal guidance are included; track queries can be submitted through Spotify mode. |
+| Browser cookie extraction / age-restricted fallback | Not browser-native | Browser security prevents reading user browser profiles. Add server-side cookie-file support if needed. |
+| Global keyboard/mouse hooks and process injection | Unsupported | Replaced with focused terminal controls because browsers intentionally forbid global OS hooks. |
 
-## Why a backend may be required
+## Backend behavior
 
-A static browser app can recreate CrystalMedia's terminal UI and user flow, but real media extraction needs capabilities unavailable to GitHub Pages, Cloudflare Pages static assets, or Vercel static hosting:
-
-1. Spawning `yt-dlp`, ffmpeg, Deno, or Node subprocesses.
-2. Writing arbitrary files and output directory trees.
-3. Reading browser profile cookies for age-restricted media.
-4. Bypassing CORS restrictions for protected media and metadata endpoints.
-5. Running long-lived downloads without tab lifecycle interruptions.
-
-Recommended full-parity architecture: keep this frontend static and add a separate Node/Python backend endpoint that queues `yt-dlp` jobs, streams progress as Server-Sent Events or WebSockets, and returns completed files through authenticated download URLs.
+The referenced online yt-dlp web pattern is a browser UI connected to server-side download capacity. This repository now includes the same kind of mechanism: `server/server.js` starts an Express backend, spawns native `yt-dlp`, parses real progress from stdout/stderr, exposes download artifacts from `CrystalMedia_output/downloads`, and streams job state to the terminal UI using Server-Sent Events.
 
 ## Deployment instructions
 
-### Local development
+### Fully functional local/native deployment
 
 ```bash
 npm install
-npm run dev
+npm run build
+npm run server
 ```
 
-### Production build
+Requirements on the server machine:
+
+```bash
+yt-dlp --version
+ffmpeg -version
+```
+
+Open `http://localhost:4174` and use the terminal menus. Real download links appear in the progress panel when jobs finish.
+
+### Frontend-only static deployment
 
 ```bash
 npm run build
 ```
 
-The static output is written to `dist/`.
+Publish `dist/` to GitHub Pages, Cloudflare Pages, or Vercel static hosting. Static-only deployment preserves the terminal UI but cannot spawn native `yt-dlp`; pair it with the Node backend for full functionality.
 
-### GitHub Pages
+### Cloudflare Pages / Vercel with backend
 
-1. Run `npm run build`.
-2. Publish the `dist/` directory with GitHub Actions or Pages.
-3. If deploying under a repository subpath, configure Vite `base` as needed in a future `vite.config.js`.
-
-### Cloudflare Pages
-
-- Build command: `npm run build`
-- Output directory: `dist`
-
-### Vercel
-
-- Framework preset: Vite
-- Build command: `npm run build`
-- Output directory: `dist`
+- Frontend build command: `npm run build`
+- Static output directory: `dist`
+- Backend command on a Node server/container: `npm run server`
+- Required system packages in the backend image/container: `yt-dlp`, `ffmpeg`
 
 ## Visual recreation notes
 
 The browser app recreates the reference terminal by combining:
 
-- A dark Command Prompt/Termux-style browser shell.
+- Full-width dark Command Prompt/Termux-style browser shell with no right sidebar.
 - Monospace text and fixed-line terminal rendering.
-- Pastel blue CrystalMedia ASCII art.
+- FIGlet-generated CrystalMedia ASCII art.
 - Projection-style particle starfield using `.`, `*`, and `+` tokens.
-- Blinking cursor, command prompt, history, and scrollback.
-- Responsive layout that hides documentation controls on smaller screens.
+- Blinking cursor, command prompt, history, scrollback, and editable URL prompt.
+- Real backend download progress when `npm run server` is active.
