@@ -1,0 +1,12 @@
+:root { color-scheme: dark; --sky:#a5d8ff; --chrome:#2b2b2b; }
+* { box-sizing: border-box; }
+html, body, #app { height:100%; margin:0; background:#050606; }
+body { font-family: Consolas, 'Cascadia Mono', 'Fira Code', 'Courier New', monospace; overflow:hidden; }
+.termux-shell { height:100%; background:linear-gradient(var(--chrome) 0 39px,#050606 39px); }
+.termux-shell::before { content:'▣  Command Prompt - crystalmedia-web   ×      +   ˅'; position:fixed; top:0; left:0; right:0; height:39px; color:#f3f3f3; background:var(--chrome); font:600 14px system-ui,sans-serif; display:flex; align-items:center; padding-left:20px; z-index:3; }
+.terminal { position:relative; margin-top:39px; width:100vw; height:calc(100vh - 39px); background:#050606; color:var(--sky); overflow:auto; outline:none; padding:68px 32px 32px; text-shadow:0 0 8px rgba(165,216,255,.25); }
+#screen { margin:0; min-height:100%; font:700 clamp(13px, 1.06vw, 20px)/1.14 Consolas, 'Cascadia Mono', 'Courier New', monospace; white-space:pre; color:var(--sky); }
+.cursor { display:inline-block; width:.62em; height:1.15em; background:var(--sky); box-shadow:0 0 12px var(--sky); animation:blink 1s steps(1) infinite; position:absolute; bottom:32px; left:32px; opacity:.75; }
+@keyframes blink { 50% { opacity:0; } }
+#hiddenInput { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
+@media (max-width: 900px) { .terminal { padding:32px 14px; } }
